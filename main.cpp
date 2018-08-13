@@ -22,22 +22,25 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Description:
-This is the skeleton for a basic 2D engine in OpenGL.
+This is a c++ demonstration of basic kinematics 
 */
 
 
-#include "GLIncludes.h"
+#include "GLRender.h"
 
-// The basic structure for a PhysicsBody. We need a center, a radius, velocity, acceleration, mass, and VBO and total number of vertices.
-struct PhysicsBody {
+
+// The basic structure for a body. We need a center, a radius, velocity, acceleration, mass, and VBO and total number of vertices.
+struct SimpleBody {
 	glm::vec3 origin;
 	float radius;
 	glm::vec3 velocity;
 	glm::vec3 acceleration;
-	glRender base; //VBO
+	Drawer base; //VBO
 	float mass;
 	glm::mat4 MVP; //Vertices
-}circle;
+};
+
+SimpleBody circle;
 
 
 #pragma region program specific Data members
@@ -49,7 +52,7 @@ int NumberOfDivisions = 20;
 glm::vec3 acc,force;
 
 // vector of scene bodies
-std::vector<PhysicsBody> bodies;
+std::vector<SimpleBody*> bodies;
 #pragma endregion
 
 
@@ -78,7 +81,7 @@ glm::vec3 EulerIntegrator(glm::vec3 pos, float h, glm::vec3 &velocity, glm::vec3
 
 
 
-//This function sets up a basic circle, change variables as required
+//This function sets up a basic circle, change variables as required and player instructions
 void setup()
 {
 	circle.MVP = MVP;
@@ -114,7 +117,10 @@ void setup()
 	circle.base.initBuffer(NumberOfDivisions * 3, &vertices[0]);
 
 	//Adding circle to vector of PhysicsBodies that get rendered
-	bodies.push_back(circle);
+	bodies.push_back(&circle);
+
+	std::cout << "WASD to add acceleration to the circle\n";
+	std::cout << "SPACE to remove all velocity";
 }
 
 
@@ -124,7 +130,29 @@ void setup()
 // This runs once every physics timestep.
 void update()
 {
+	//Clamps position
+	if (circle.origin.x > 1)
+	{
+		circle.origin.x = 1;
+		circle.velocity.x = 0;
+	}
+	else if (circle.origin.x < -1)
+	{
+		circle.origin.x = -1;
+		circle.velocity.x = 0;
+	}
+	else if (circle.origin.y > 1)
+	{
+		circle.origin.y = 1;
+		circle.velocity.y = 0;
+	}
+	else if (circle.origin.y < -1)
+	{
+		circle.origin.y = -1;
+		circle.velocity.y = 0;
+	}
 
+	
 	// Integrate the position of the object using the integrator.
 	circle.origin = EulerIntegrator(circle.origin, timestep, circle.velocity, circle.acceleration);
 
@@ -138,14 +166,42 @@ void update()
 // It is a callback funciton. i.e. glfw takes the pointer to this function (via function pointer) and calls this function every time a key is pressed in the during event polling.
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+	float boost=0.025;
 	//Sets the current window to a close flag when ESC is pressed
 	if (key == GLFW_KEY_ESCAPE && ((action == GLFW_PRESS) || action == GLFW_REPEAT))
 	{
 		glfwSetWindowShouldClose(window,1);
 	}
 	
+	
 }
 #pragma endregion
+
+void MultipleInput()
+{
+	float boost = 0.0005;
+
+	if (glfwGetKey(window, GLFW_KEY_W) == (GLFW_PRESS || GLFW_REPEAT))
+	{
+		circle.acceleration.y += boost;
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == (GLFW_PRESS || GLFW_REPEAT))
+	{
+		circle.acceleration.y -= boost;
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == (GLFW_PRESS || GLFW_REPEAT))
+	{
+		circle.acceleration.x += boost;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == (GLFW_PRESS || GLFW_REPEAT))
+	{
+		circle.acceleration.x -= boost;
+	}
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == (GLFW_PRESS || GLFW_REPEAT))
+	{
+		circle.velocity = { 0,0,0 };
+	}
+}
 
 void main()
 {
@@ -161,6 +217,10 @@ void main()
 	// Enter the main loop.
 	while (!glfwWindowShouldClose(window))
 	{
+
+		//Multiple Key Input
+		MultipleInput();
+
 		// Call to update() which will update the gameobjects.
 		update();
 
@@ -168,7 +228,7 @@ void main()
 		renderScene();
 
 		//Rendering each body after the scene
-		for each (PhysicsBody body in bodies)
+		for each (SimpleBody *body in bodies)
 			renderBody(body);
 
 		// Swaps the back buffer to the front buffer

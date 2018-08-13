@@ -22,12 +22,28 @@ You should have received a copy of the GNU General Public License
 along with this program.If not, see <http://www.gnu.org/licenses/>.
 
 Description:
-This is the skeleton for a basic 2D engine in OpenGL.
+Header file for OpenGL setup
 */
 
-#ifndef _RENDER_H
-#define _RENDER_H
-#include "GLIncludes.h"
+#ifndef _GL_RENDER_H
+#define _GL_RENDER_H
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include "GL\glew.h"
+#include "glfw\glfw3.h"
+#include "glm\glm.hpp"
+#include "glm\gtc\matrix_transform.hpp"
+#include "glm\gtc\type_ptr.hpp"
+#include "glm\gtc\quaternion.hpp"
+#include "glm\gtx\quaternion.hpp"
+#include "glm\gtx\rotate_vector.hpp"
+
+#define PI 3.14159265
+#define DIVISIONS  40
 
 // Global data members
 #pragma region Global Data member
@@ -79,7 +95,7 @@ struct VertexFormat
 };
 
 //This struct consists of the basic stuff needed for getting a shape on the screen.
-struct glRender {
+struct Drawer {
 
 	//This stores the address the buffer/memory in the GPU. It acts as a handle to access the buffer memory in GPU.
 	GLuint vbo;
@@ -333,11 +349,12 @@ void renderScene()
 template<class T>
 void renderBody(T body)
 {
-	glUniformMatrix4fv(uniMVP, 1, GL_FALSE, glm::value_ptr(body.MVP));
-	glBindBuffer(GL_ARRAY_BUFFER, body.base.vbo);
+	glUniformMatrix4fv(uniMVP, 1, GL_FALSE, glm::value_ptr(body->MVP));
+	glBindBuffer(GL_ARRAY_BUFFER, body->base.vbo);
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)16);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)0);
-	glDrawArrays(GL_TRIANGLES, 0, body.base.numberOfVertices);
+	
+	glDrawArrays(GL_TRIANGLES, 0, body->base.numberOfVertices);
 }
 
-#endif _RENDER_H
+#endif _GL_RENDER_H
