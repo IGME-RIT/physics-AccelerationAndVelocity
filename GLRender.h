@@ -1,6 +1,6 @@
 /*
-File Name : render.h
-Copyright © 2018
+File Name : GLRender.h
+Copyright ï¿½ 2018
 Original authors : Srinivasan Thiagarajan
 Refactored by Sanketh Bhat
 Written under the supervision of David I.Schwartz, Ph.D., and
